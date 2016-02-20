@@ -1,7 +1,7 @@
 {
   "name": "generate-ask",
   "description": "Adds user prompts to your generator for getting data that is commonly for rendering templates, like author name, project name, etc.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/generate/generate-ask",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "generate/generate-ask",
@@ -10,7 +10,8 @@
   },
   "license": "MIT",
   "files": [
-    "index.js"
+    "index.js",
+    "generator.js"
   ],
   "main": "index.js",
   "engines": {
