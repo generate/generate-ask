@@ -1,12 +1,12 @@
 {
   "name": "generate-ask",
-  "description": "Common generator prompts.",
+  "description": "Adds user prompts to your generator for getting data that is commonly for rendering templates, like author name, project name, etc.",
   "version": "0.1.0",
-  "homepage": "https://github.com//generate-ask",
-  "author": " ()",
-  "repository": "/generate-ask",
+  "homepage": "https://github.com/generate/generate-ask",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "generate/generate-ask",
   "bugs": {
-    "url": "https://github.com//generate-ask/issues"
+    "url": "https://github.com/generate/generate-ask/issues"
   },
   "license": "MIT",
   "files": [
@@ -19,18 +19,48 @@
   "scripts": {
     "test": "mocha"
   },
+  "dependencies": {
+    "base-questions": "^0.3.2",
+    "mixin-deep": "^1.1.3",
+    "namify": "^0.1.3",
+    "project-name": "^0.2.4"
+  },
   "devDependencies": {
     "gulp-format-md": "*",
     "mocha": "*"
   },
   "keywords": [
+    "answers",
+    "ask",
+    "data",
+    "feedback",
     "generate",
-    "ask"
+    "generategenerator",
+    "generator",
+    "input",
+    "populate",
+    "prompt",
+    "question",
+    "questions",
+    "templates",
+    "user"
   ],
   "verb": {
+    "run": true,
+    "toc": false,
     "layout": "default",
+    "tasks": [
+      "readme"
+    ],
     "plugins": [
       "gulp-format-md"
-    ]
+    ],
+    "reflinks": [
+      "verb",
+      "generate"
+    ],
+    "lint": {
+      "reflinks": true
+    }
   }
 }
