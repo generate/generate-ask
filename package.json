@@ -21,7 +21,6 @@
     "test": "mocha"
   },
   "dependencies": {
-    "base-questions": "^0.3.2",
     "mixin-deep": "^1.1.3",
     "namify": "^0.1.3",
     "project-name": "^0.2.4"
