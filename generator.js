@@ -2,7 +2,6 @@
 
 var merge = require('mixin-deep');
 var project = require('project-name');
-var questions = require('base-questions');
 var namify = require('namify');
 
 /**
@@ -10,32 +9,21 @@ var namify = require('namify');
  */
 
 module.exports = function(app, base) {
-  // use `base-questions` plugin
-  app.use(questions(base.options));
-
-  // load options from the shared instance onto the generator's options
-  app.option(base.options);
 
   /**
-   * Init questions
+   * Load options from the `base` (shared) instance onto the generator's options
    */
 
-  app.task('init', function(cb) {
-    app.questions.clear();
-    app.questions
-      .set('init.intro', 'Would you like to disable the intro next time?')
-      .set('init.tasks', 'Would you like to set default tasks to run?')
-      .set('init.flags', 'Do you want to disable tasks when non-task flags are passed on argv (like `--set=foo`)?');
-    app.build('ask', cb);
-  });
+  app.option(base.options);
 
   /**
    * Author questions
    */
 
-  app.task('author', function(cb) {
-    app.questions.clear();
-    app.questions
+  app.task('author', { silent: true }, function(cb) {
+    base.assertPlugin('base-questions');
+    base.questions.clear();
+    base.questions
       .set('author.name', 'Author\'s name?', {
         default: get('author.name')
       })
@@ -59,10 +47,11 @@ module.exports = function(app, base) {
    */
 
   app.task('project', function(cb) {
-    app.questions.clear();
-    app.questions
+    base.assertPlugin('base-questions');
+    base.questions.clear();
+    base.questions
       .set('project.name', 'Project name?', {
-        default: get('project.name') || app.project || project(app.cwd),
+        default: get('project.name') || base.project || project(base.cwd),
         force: true
       })
       .set('project.owner', 'Project owner?', {
@@ -72,7 +61,7 @@ module.exports = function(app, base) {
       .set('project.description', 'Project description?', {
         default: get('project.description'),
         force: true
-      })
+      });
     app.build('ask', cb);
   });
 
@@ -80,18 +69,20 @@ module.exports = function(app, base) {
    * Ask questions
    */
 
-  app.task('ask', function(cb) {
-    app.ask(function(err, answers) {
-      if (err) return cb(err);
-      app.answers(answers);
+  app.task('ask', { silent: true }, function(cb) {
+    base.assertPlugin('base-questions');
 
-      var project = app.answers('project') || {};
-      var name = app.answers('name') || project.name;
+    base.prompt(function(err, answers) {
+      if (err) return cb(err);
+      base.answers(answers);
+
+      var project = base.answers('project') || {};
+      var name = base.answers('name') || project.name;
       if (name) {
-        app.answers('varname', app.option('var') || namify(name));
-        app.answers('alias', app.toAlias(name));
+        base.answers('varname', base.option('var') || namify(name));
+        base.answers('alias', base.toAlias(name));
       }
-      app.answers(merge({}, project));
+      base.answers(merge({}, project));
       cb();
     });
   });
