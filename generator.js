@@ -1,15 +1,26 @@
 'use strict';
 
 var merge = require('mixin-deep');
+var project = require('project-name');
 var questions = require('base-questions');
 var namify = require('namify');
 
+/**
+ * Generic prompts for commonly used project data
+ */
+
 module.exports = function(app, base) {
+  // use `base-questions` plugin
   app.use(questions(base.options));
+
+  // load options from the shared instance onto the generator's options
   app.option(base.options);
 
+  /**
+   * Init questions
+   */
+
   app.task('init', function(cb) {
-    setup(app);
     app.questions.clear();
     app.questions
       .set('init.intro', 'Would you like to disable the intro next time?')
@@ -18,48 +29,102 @@ module.exports = function(app, base) {
     app.build('ask', cb);
   });
 
+  /**
+   * Author questions
+   */
+
   app.task('author', function(cb) {
-    setup(app);
     app.questions.clear();
     app.questions
-      .set('author.name', 'Author\'s name?')
-      .set('author.github', 'Author\'s GitHub username?')
-      .set('author.twitter', 'Author\'s twitter username?')
-      .set('author.email', 'Author\'s email address?')
-      .set('author.url', 'Author\'s URL?');
+      .set('author.name', 'Author\'s name?', {
+        default: get('author.name')
+      })
+      .set('author.username', 'Author\'s GitHub username?', {
+        default: get('author.username')
+      })
+      .set('author.twitter', 'Author\'s twitter username?', {
+        default: get('author.twitter')
+      })
+      .set('author.email', 'Author\'s email address?', {
+        default: get('author.email')
+      })
+      .set('author.url', 'Author\'s URL?', {
+        default: get('author.url')
+      });
     app.build('ask', cb);
   });
+
+  /**
+   * Ask project-relaed questions
+   */
 
   app.task('project', function(cb) {
     app.questions.clear();
     app.questions
-      .set('project.name', 'Project name?')
-      .set('project.description', 'Project description?')
+      .set('project.name', 'Project name?', {
+        default: get('project.name') || app.project || project(app.cwd),
+        force: true
+      })
+      .set('project.owner', 'Project owner?', {
+        default: get('project.owner'),
+        force: true
+      })
+      .set('project.description', 'Project description?', {
+        default: get('project.description'),
+        force: true
+      })
     app.build('ask', cb);
   });
 
-  app.task('ask', function(cb) {
-    setup(app);
+  /**
+   * Ask questions
+   */
 
+  app.task('ask', function(cb) {
     app.ask(function(err, answers) {
       if (err) return cb(err);
+      app.answers(answers);
 
-      var project = app.get('answers.project');
-      var name = app.get('answers.name');
+      var project = app.answers('project') || {};
+      var name = app.answers('name') || project.name;
       if (name) {
-        answers.varname = app.option('var') || namify(name);
-        answers.alias = app.toAlias(name);
+        app.answers('varname', app.option('var') || namify(name));
+        app.answers('alias', app.toAlias(name));
       }
-
-      var project = merge({}, answers.project);
-      app.data(project);
-      app.data(answers);
+      app.answers(merge({}, project));
       cb();
     });
   });
 
-  app.task('default', ['ask']);
+  /**
+   * util for getting data from the generator instance,
+   * base (shared) instance, or config store
+   */
+
+  function get(prop) {
+    var val = app.data(prop);
+    if (typeof val === 'undefined') {
+      val = base.data(prop);
+    }
+    if (typeof val === 'undefined') {
+      val = app.store.get(prop);
+    }
+    if (typeof val === 'undefined') {
+      return null;
+    }
+    return val;
+  }
+
+  /**
+   * Default task
+   */
+
+  app.task('default', { silent: true }, ['ask']);
 };
+
+/**
+ * Setup questions, clear data before prompting if necessary
+ */
 
 function setup(app) {
   app.set('cache.data.project', merge({}, app.cache.data));
@@ -93,13 +158,19 @@ function setup(app) {
   app.questions.on('answer', answerHandler);
 
   function answerHandler(key, val, question) {
-      if (val === ' ()') {
+      if (typeof val === 'string' && val.trim() === '()') {
         question.answer.del();
         return;
       }
+
       if (key.indexOf('author') === 0 && val) {
         question.answer.setDefault(key, val);
-        // app.store.set(key, val);
+        app.store.set(key, val);
+      }
+
+      if (key.indexOf('project') === 0 && val) {
+        question.answer.set(key, val);
+        app.store.local.set(key, val);
       }
     }
   }
