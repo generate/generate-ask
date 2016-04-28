@@ -8,7 +8,7 @@ require = utils;
  * Module dependencies
  */
 
-require('base-questions', 'questions');
+require('common-questions', 'questions');
 require('isobject', 'isObject');
 require('mixin-deep', 'merge');
 require('namify', 'namify');

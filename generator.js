@@ -1,5 +1,6 @@
 'use strict';
 
+var argv = require('minimist')(process.argv.slice(2));
 var debug = require('debug')('generate:ask');
 var utils = require('./utils');
 
@@ -8,10 +9,9 @@ var utils = require('./utils');
  */
 
 module.exports = function(app, base) {
+  if (!app.isApp || app.isRegistered('generate-ask')) return;
   debug('initializing <%s>, from <%s>', __filename, module.parent.id);
 
-  app.option(base.options);
-  app.use(utils.questions(app.options));
   app.questions.use(utils.match());
 
   /**
@@ -46,6 +46,9 @@ module.exports = function(app, base) {
    */
 
   app.task('ask', { silent: true }, function(cb) {
+    app.data(base.cache.data);
+    app.option(base.options);
+
     base.ask(function(err, answers) {
       if (err) return cb(err);
       setNames(app, base, answers);
